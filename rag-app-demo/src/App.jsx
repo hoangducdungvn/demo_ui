@@ -125,42 +125,71 @@ const RAGChatApp = () => {
     setUploadStatus('');
   };
 
+  // Format text với styling đẹp
+  const formatText = (text) => {
+    if (!text) return '';
+    
+    // Thay thế ** thành bold
+    let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-700">$1</strong>');
+    
+    // Thay thế các pattern phổ biến
+    formatted = formatted.replace(/Điều (\d+)/g, '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-semibold">Điều $1</span>');
+    formatted = formatted.replace(/Chương (\d+)/g, '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-md font-semibold">Chương $1</span>');
+    formatted = formatted.replace(/Luật (.*?)(?=\s|$|\.)/g, '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-md font-semibold">Luật $1</span>');
+    
+    // Thay thế bullet points
+    formatted = formatted.replace(/- (.*?)(?=\n|$)/g, '<li class="ml-4 mb-1">• $1</li>');
+    
+    return formatted;
+  };
+
   // Component tin nhắn
   const MessageBubble = ({ message }) => {
     const isUser = message.type === 'user';
     
     return (
-      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`flex max-w-xs lg:max-w-md ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-          <div className={`flex-shrink-0 ${isUser ? 'ml-2' : 'mr-2'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isUser ? 'bg-blue-500' : 'bg-gray-500'
+      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
+        <div className={`flex max-w-2xl lg:max-w-3xl ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div className={`flex-shrink-0 ${isUser ? 'ml-3' : 'mr-3'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
+              isUser ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-gray-500 to-gray-600'
             }`}>
-              {isUser ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
+              {isUser ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
             </div>
           </div>
-          <div className={`px-4 py-2 rounded-lg ${
+          <div className={`px-4 py-3 rounded-xl shadow-sm ${
             isUser 
-              ? 'bg-blue-500 text-white' 
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' 
               : message.isError 
-                ? 'bg-red-100 text-red-800 border border-red-300'
-                : 'bg-gray-100 text-gray-800'
+                ? 'bg-red-50 text-red-800 border border-red-200'
+                : 'bg-white text-gray-800 border border-gray-200'
           }`}>
-            <div className="text-sm">{message.content}</div>
-            <div className={`text-xs mt-1 ${
-              isUser ? 'text-blue-100' : 'text-gray-500'
+            <div className={`${isUser ? 'text-sm' : 'text-sm leading-relaxed'}`}>
+              {isUser ? (
+                message.content
+              ) : (
+                <div 
+                  dangerouslySetInnerHTML={{ __html: formatText(message.content) }}
+                  className="prose prose-sm max-w-none"
+                />
+              )}
+            </div>
+            <div className={`text-xs mt-2 ${
+              isUser ? 'text-blue-100' : 'text-gray-400'
             }`}>
               {message.timestamp}
             </div>
             {message.sources && message.sources.length > 0 && (
-              <div className="mt-2 text-xs text-gray-600">
-                <div className="font-semibold">Nguồn tham khảo:</div>
-                {message.sources.map((source, index) => (
-                  <div key={index} className="flex items-center mt-1">
-                    <FileText className="w-3 h-3 mr-1" />
-                    <span>{source}</span>
-                  </div>
-                ))}
+              <div className="mt-3 pt-2 border-t border-gray-200">
+                <div className="text-xs font-semibold text-gray-600 mb-2">📚 Nguồn tham khảo:</div>
+                <div className="space-y-1">
+                  {message.sources.map((source, index) => (
+                    <div key={index} className="flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                      <FileText className="w-3 h-3 mr-1 text-blue-500" />
+                      <span>{source}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
