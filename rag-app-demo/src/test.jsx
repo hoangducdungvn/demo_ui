@@ -17,8 +17,6 @@ import {
 } from 'lucide-react';
 
 const RAGChatApp = () => {
-  console.log('🎯 RAGChatApp component rendering...');
-  
   const [messages, setMessages] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [userId, setUserId] = useState('');
@@ -40,32 +38,18 @@ const RAGChatApp = () => {
 
   const API_URL = 'http://localhost:8000';
 
-  console.log('🔄 Current state:', {
-    messagesCount: messages.length,
-    userId,
-    username,
-    currentSessionId,
-    sessionsCount: sessions.length,
-    userExists,
-    sidebarOpen
-  });
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   // Kiểm tra user tồn tại
   const checkUserExists = async (username) => {
-    console.log('🔍 Checking user exists:', username);
     if (!username.trim()) return false;
     
     try {
       const response = await fetch(`${API_URL}/api/users/${username}`);
-      console.log('👤 Check user response:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('👤 User data:', data);
         setUserId(data.user.id);
         setUserExists(true);
         loadSessions(data.user.id);
@@ -73,7 +57,7 @@ const RAGChatApp = () => {
       }
       return false;
     } catch (error) {
-      console.error('❌ Error checking user:', error);
+      console.error('Error checking user:', error);
       return false;
     }
   };
@@ -111,18 +95,14 @@ const RAGChatApp = () => {
 
   // Load sessions của user
   const loadSessions = async (userId) => {
-    console.log('📋 Loading sessions for user:', userId);
     try {
       const response = await fetch(`${API_URL}/api/users/${userId}/sessions`);
-      console.log('📋 Load sessions response:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('📋 Sessions data:', data);
         setSessions(data.sessions || []);
       }
     } catch (error) {
-      console.error('❌ Error loading sessions:', error);
+      console.error('Error loading sessions:', error);
     }
   };
 
@@ -212,10 +192,6 @@ const RAGChatApp = () => {
 
   // Gửi câu hỏi
   const sendQuestion = async () => {
-    console.log('🚀 Starting sendQuestion...');
-    console.log('userId:', userId);
-    console.log('currentQuestion:', currentQuestion);
-    
     if (!userId || !currentQuestion.trim()) {
       alert('Vui lòng đăng nhập và nhập câu hỏi!');
       return;
@@ -229,38 +205,24 @@ const RAGChatApp = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const questionToSend = currentQuestion; // Lưu lại trước khi clear
     setCurrentQuestion('');
     setIsLoading(true);
 
     try {
-      console.log('📤 Sending request to API...');
-      const requestBody = {
-        user_id: userId,
-        session_id: currentSessionId,
-        question: questionToSend
-      };
-      console.log('Request body:', requestBody);
-
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          user_id: userId,
+          session_id: currentSessionId,
+          question: currentQuestion
+        })
       });
 
-      console.log('📥 Response status:', response.status);
-      console.log('📥 Response ok:', response.ok);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
-      console.log('📥 Response data:', data);
       
       // Cập nhật session_id nếu tạo mới
       if (data.session_id && data.session_id !== currentSessionId) {
-        console.log('🔄 Updating session_id:', data.session_id);
         setCurrentSessionId(data.session_id);
         loadSessions(userId);
       }
@@ -268,17 +230,12 @@ const RAGChatApp = () => {
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        content: data.answer[0].content || 'Không tìm thấy câu trả lời!',
+        content: data.answer || 'Không tìm thấy câu trả lời!',
         timestamp: new Date().toLocaleTimeString()
       };
-      console.log('🤖 Bot message created:', botMessage);
 
       setMessages(prev => [...prev, botMessage]);
-      console.log('✅ sendQuestion completed successfully');
     } catch (error) {
-      console.error('❌ Error in sendQuestion:', error);
-      console.error('Error stack:', error.stack);
-      
       const errorMessage = {
         id: Date.now() + 1,
         type: 'bot',
@@ -289,7 +246,6 @@ const RAGChatApp = () => {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      console.log('🏁 sendQuestion finished (finally block)');
     }
   };
 
@@ -347,9 +303,9 @@ const RAGChatApp = () => {
 
   const MessageBubble = ({ message }) => {
     const isUser = message.type === 'user';
-    console.log("message test: ",message);
+    
     return (
-      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>-
+      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
         <div className={`flex max-w-2xl lg:max-w-3xl ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
           <div className={`flex-shrink-0 ${isUser ? 'ml-3' : 'mr-3'}`}>
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
@@ -391,9 +347,9 @@ const RAGChatApp = () => {
   );
 
   return (
-    <div className="h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-white shadow-lg overflow-hidden flex flex-col justify-between`}>
+      <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-white shadow-lg overflow-hidden`}>
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Lịch sử Chat</h2>
@@ -567,20 +523,10 @@ const RAGChatApp = () => {
             </div>
           </div>
         )}
-        <div className=" mt-4 bg-blue-50 rounded-lg p-4 ">
-            <h3 className="font-semibold text-blue-800 mb-2">💡 Gợi ý sử dụng:</h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Đăng nhập hoặc tạo tài khoản để lưu lịch sử chat</li>
-              <li>• Tạo cuộc trò chuyện mới cho từng chủ đề khác nhau</li>
-              <li>• Hỏi về các điều luật cụ thể: "Điều kiện kết hôn là gì?"</li>
-              <li>• Tìm hiểu về quy trình: "Thủ tục ly hôn như thế nào?"</li>
-              <li>• Tải lên tài liệu PDF mới để mở rộng kiến thức của hệ thống</li>
-            </ul>
-          </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col ">
+      <div className="flex-1 flex flex-col">
         {/* Toggle Sidebar Button */}
         {!sidebarOpen && (
           <button
@@ -591,9 +537,9 @@ const RAGChatApp = () => {
           </button>
         )}
 
-        <div className="flex flex-col p-4 h-screen">
+        <div className="flex-1 p-4">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6" >
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">
               🏛️ Trợ lý Luật Hôn Nhân và Gia Đình Việt Nam 2014
             </h1>
@@ -632,7 +578,7 @@ const RAGChatApp = () => {
           </div>
 
           {/* Chat Container */}
-          <div className="bg-white rounded-lg shadow-md flex flex-col flex-1 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-md flex flex-col h-96">
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 ? (
@@ -645,7 +591,6 @@ const RAGChatApp = () => {
                 </div>
               ) : (
                 messages.map((message) => (
-                  console.log("messages: ",messages),
                   <MessageBubble key={message.id} message={message} />
                 ))
               )}
@@ -691,7 +636,16 @@ const RAGChatApp = () => {
           </div>
 
           {/* Tips */}
-          
+          <div className="mt-4 bg-blue-50 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-800 mb-2">💡 Gợi ý sử dụng:</h3>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Đăng nhập hoặc tạo tài khoản để lưu lịch sử chat</li>
+              <li>• Tạo cuộc trò chuyện mới cho từng chủ đề khác nhau</li>
+              <li>• Hỏi về các điều luật cụ thể: "Điều kiện kết hôn là gì?"</li>
+              <li>• Tìm hiểu về quy trình: "Thủ tục ly hôn như thế nào?"</li>
+              <li>• Tải lên tài liệu PDF mới để mở rộng kiến thức của hệ thống</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
