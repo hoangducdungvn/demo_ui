@@ -571,7 +571,7 @@ const RAGChatApp = () => {
             <h3 className="font-semibold text-blue-800 mb-2">💡 Gợi ý sử dụng:</h3>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• Đăng nhập hoặc tạo tài khoản để lưu lịch sử chat</li>
-              <li>• Tạo cuộc trò chuyện mới cho từng chủ đề khác nhau</li>
+              <li>• Tạo cuộc trò chuyện mới cho từng tình huống luật khác nhau</li>
               <li>• Hỏi về các điều luật cụ thể: "Điều kiện kết hôn là gì?"</li>
               <li>• Tìm hiểu về quy trình: "Thủ tục ly hôn như thế nào?"</li>
               <li>• Tải lên tài liệu PDF mới để mở rộng kiến thức của hệ thống</li>
