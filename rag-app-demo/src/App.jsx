@@ -268,7 +268,7 @@ const RAGChatApp = () => {
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        content: data.answer[0].content || 'Không tìm thấy câu trả lời!',
+        content: data.answer || 'Không tìm thấy câu trả lời!',
         timestamp: new Date().toLocaleTimeString()
       };
       console.log('🤖 Bot message created:', botMessage);
